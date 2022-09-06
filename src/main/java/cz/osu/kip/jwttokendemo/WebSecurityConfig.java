@@ -31,6 +31,8 @@ public class WebSecurityConfig {
             .build();
   }
 
+  @Autowired private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.csrf().disable()
@@ -38,6 +40,7 @@ public class WebSecurityConfig {
             .antMatchers("/user/login", "/user/signin/", "/user/list").permitAll()
             .antMatchers("/user/listAdmin").hasAuthority("ADMIN")
             .anyRequest().authenticated()
+            .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
             .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
     http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
