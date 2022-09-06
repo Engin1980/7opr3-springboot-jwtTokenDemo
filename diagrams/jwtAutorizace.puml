@@ -1,0 +1,35 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor User as u
+participant "JwtRequestFilter" as f
+participant "SpringBoot" as ss
+participant UserController as uc
+participant JwtTokenUtil as t
+
+u -> f : /user/listAdmin
+note right: Zachycení požadavku
+activate f
+f -> f : get token\nfrom HTTP headers
+f -> t : validateAndExtractTokenData(token)
+activate t
+t --> f : username, roles
+deactivate t
+f -> ss : set SecurityContext user(username, roles)
+activate ss
+ss --> f
+deactivate ss
+f -> ss : /user/listAdmin
+note right: Pokračování v požadavku
+deactivate f
+activate ss
+ss -> ss : Kontrola uživatele\nv SecurityContext
+ss -> uc : /user/list
+deactivate ss
+activate uc
+note over uc: Zpracování požadavku
+uc -> u : výsledek požadavku
+deactivate uc
+
+@enduml

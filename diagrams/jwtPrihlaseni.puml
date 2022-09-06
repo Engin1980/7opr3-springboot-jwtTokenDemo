@@ -1,0 +1,45 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor User as u
+participant "SpringBoot" as ss
+participant UserController as uc
+participant "Authentication\nManager" as am
+participant JwtTokenUtil as t
+participant "AppUserDetails\nService" as auds
+database "AppUser\nRepository" as r
+participant "Password\nEncoder" as pe
+
+
+u -> ss : /user/login(email, heslo)
+activate ss
+note right: Nechráněný end-point, nekontroluje se
+ss -> uc : /user/login(email, password)
+deactivate ss
+activate uc
+uc -> am : authenticate(email, password)
+group Interní volání v SpringBoot
+am -> auds : getUserByEmail(email)
+activate auds
+auds -> r : get(email)
+activate r
+r --> auds: appUser
+deactivate r
+auds --> am : appUserDetails
+deactivate auds
+am -> pe : checkPasswords(appUserDetails.password, password)
+activate pe
+pe --> am
+deactivate pe
+end
+activate am
+am --> uc : appUserDetails
+deactivate am
+uc -> t : generateToken(appUserDetails)
+activate t
+t --> uc : token
+deactivate t
+uc -> u: HTTP 200 Ok + token
+deactivate uc
+@enduml
